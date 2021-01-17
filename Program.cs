@@ -1,5 +1,6 @@
 ﻿using System;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 
 namespace ExploreCalifornia.EmailService
@@ -13,7 +14,20 @@ namespace ExploreCalifornia.EmailService
             var connection = factory.CreateConnection();
             var channel = connection.CreateModel();
 
-            // declare resources here, handle consumed events, etc
+            channel.QueueDeclare("emailServiceQueue", true, false, false);
+            channel.QueueBind("emailServiceQueue","webappExchange", "");
+
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (sender, eventArgs) =>
+            {
+                var msg = System.Text.Encoding.UTF8.GetString(eventArgs.Body.Span);
+                Console.WriteLine(msg);
+            };
+
+            channel.BasicConsume("emailServiceQueue", true, consumer);
+
+            Console.ReadLine();
+
 
             channel.Close();
             connection.Close();
