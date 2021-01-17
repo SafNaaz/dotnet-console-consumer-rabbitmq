@@ -15,13 +15,13 @@ namespace ExploreCalifornia.EmailService
             var channel = connection.CreateModel();
 
             channel.QueueDeclare("emailServiceQueue", true, false, false);
-            channel.QueueBind("emailServiceQueue","webappExchange", "");
+            channel.QueueBind("emailServiceQueue","webappExchange", "tour.booked");
 
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += (sender, eventArgs) =>
             {
                 var msg = System.Text.Encoding.UTF8.GetString(eventArgs.Body.Span);
-                Console.WriteLine(msg);
+                Console.WriteLine($"{eventArgs.RoutingKey} : {msg}");
             };
 
             channel.BasicConsume("emailServiceQueue", true, consumer);
